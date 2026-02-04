@@ -8,37 +8,16 @@ app.use(express.json());
 
 const FILE = "tasks.json";
 
-// Simple authentication middleware (bonus feature)
-// TODO: make this more secure later
+
 const users = {
   student: "pass123",
   admin: "admin123",
 };
 
-function authenticate(req, res, next) {
-  const auth = req.headers.authorization;
 
-  if (!auth) {
-    return res.status(401).json({ error: "No credentials provided" });
-  }
-
-  // Basic auth format: "Basic base64(username:password)"
-  const credentials = Buffer.from(auth.split(" ")[1], "base64")
-    .toString()
-    .split(":");
-  const username = credentials[0];
-  const password = credentials[1];
-
-  if (users[username] && users[username] === password) {
-    req.username = username;
-    next();
-  } else {
-    res.status(401).json({ error: "Invalid credentials" });
-  }
-}
 
 // Create task
-app.post("/tasks", authenticate, (req, res) => {
+app.post("/tasks", (req, res) => {
   const task = req.body;
 
   let tasks = [];
@@ -64,7 +43,7 @@ app.post("/tasks", authenticate, (req, res) => {
 });
 
 // Get all tasks
-app.get("/tasks", authenticate, (req, res) => {
+app.get("/tasks", (req, res) => {
   let tasks = [];
 
   if (fs.existsSync(FILE)) {
@@ -80,7 +59,7 @@ app.get("/tasks", authenticate, (req, res) => {
 });
 
 // Get single task by ID
-app.get("/tasks/:id", authenticate, (req, res) => {
+app.get("/tasks/:id", (req, res) => {
   const id = parseInt(req.params.id);
 
   if (!fs.existsSync(FILE)) {
@@ -98,7 +77,7 @@ app.get("/tasks/:id", authenticate, (req, res) => {
 });
 
 // Update task
-app.put("/tasks/:id", authenticate, (req, res) => {
+app.put("/tasks/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const updates = req.body;
 
@@ -119,7 +98,7 @@ app.put("/tasks/:id", authenticate, (req, res) => {
 });
 
 // Delete task
-app.delete("/tasks/:id", authenticate, (req, res) => {
+app.delete("/tasks/:id", (req, res) => {
   const id = parseInt(req.params.id);
 
   let tasks = JSON.parse(fs.readFileSync(FILE));
@@ -131,7 +110,7 @@ app.delete("/tasks/:id", authenticate, (req, res) => {
 });
 
 // Bonus: Get tasks with reminders that are due
-app.get("/reminders/check", authenticate, (req, res) => {
+app.get("/reminders/check", (req, res) => {
   let tasks = [];
 
   if (fs.existsSync(FILE)) {
